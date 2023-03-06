@@ -8,7 +8,7 @@ import java.util.Scanner;
  * This class includes the game algorithm, design and everything!
  * @author Shima Zahabi
  */
-public class GameSettings {
+public class GameAlgorithm {
     private static Scanner input = new Scanner(System.in);
     private static String[][] board = new String[4][4];
     private static ArrayList<Integer> emptyCells = new ArrayList<>();

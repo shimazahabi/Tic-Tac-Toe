@@ -1,5 +1,5 @@
 public class Game {
     public static void main(String[] args) {
-        GameSettings.mainMenu();
+        GameAlgorithm.mainMenu();
     }
 }
