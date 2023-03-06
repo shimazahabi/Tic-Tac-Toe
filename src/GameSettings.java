@@ -9,12 +9,12 @@ import java.util.Scanner;
  * @author Shima Zahabi
  */
 public class GameSettings {
-    static Scanner input = new Scanner(System.in);
-    static String[][] board = new String[4][4];
-    static ArrayList<Integer> emptyCells = new ArrayList<>();
-    static String winner;
-    static String turn;
-    static String move;
+    private static Scanner input = new Scanner(System.in);
+    private static String[][] board = new String[4][4];
+    private static ArrayList<Integer> emptyCells = new ArrayList<>();
+    private static String winner;
+    private static String turn;
+    private static String move;
 
     /**
      * This method includes the main menu options.
@@ -277,6 +277,9 @@ public class GameSettings {
      * @return false if the chosen cell is already used.
      */
     public static boolean checkEmptyCells(int cellNum) {
+        for(int i=0; i<emptyCells.size(); i++){
+            System.out.print(emptyCells.get(i) + " ");
+        }
         if(emptyCells.contains(cellNum)){
             emptyCells.remove((Integer) cellNum);
             return true;
