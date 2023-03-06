@@ -250,6 +250,7 @@ public class GameSettings {
         winner = null;
         turn = "X";
         move = ANSI_CYAN + "X";
+        emptyCells.clear();
 
         int number = 1;
         for (int i = 0; i < 4; i++) {
@@ -277,9 +278,6 @@ public class GameSettings {
      * @return false if the chosen cell is already used.
      */
     public static boolean checkEmptyCells(int cellNum) {
-        for(int i=0; i<emptyCells.size(); i++){
-            System.out.print(emptyCells.get(i) + " ");
-        }
         if(emptyCells.contains(cellNum)){
             emptyCells.remove((Integer) cellNum);
             return true;
