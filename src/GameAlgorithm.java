@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
@@ -16,17 +17,26 @@ public class GameAlgorithm {
     private static String turn;
     private static String move;
 
+    private static int setRow;
+    private static int setColumn;
+
+    private static int setBlocked;
+    private static int setWinNum;
+
+    private static File settings = new File("TicTacToeSettings.txt");
+
     /**
      * This method includes the main menu options.
      */
     public static void mainMenu() {
         int command;
+        defaultSettings();
 
         do {
             clearConsole();
 
             System.out.println(ANSI_CYAN + "\t||<< Tic Tac Toe >>||\t" + ANSI_RESET);
-            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n", "1- START A GAME", "2- INFORMATION", "3- EXIT" + ANSI_RESET);
+            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n%s%n", "1- START A GAME", "2- INFORMATION", "3- Settings", "4- Exit" + ANSI_RESET);
 
             command = input.nextInt();
 
@@ -38,11 +48,14 @@ public class GameAlgorithm {
                     info();
                     break;
                 case 3:
+                    settingsMenu();
+                    break;
+                case 4:
                     break;
                 default:
                     break;
             }
-        } while (command != 3);
+        } while (command != 4);
     }
 
     /**
@@ -66,6 +79,131 @@ public class GameAlgorithm {
                 "player can be an AI). There are two options for players:\n" +
                 "1 Human\n" +
                 "2 Computer" + ANSI_RESET);
+
+        pressKey();
+    }
+
+    public static void settingsMenu() {
+        int command;
+
+        do {
+            clearConsole();
+
+            System.out.println(ANSI_CYAN + "\t||<< Settings >>||\t" + ANSI_RESET);
+            System.out.printf(ANSI_YELLOW + "%s%n%s%n%s%n", "1- Change Settings", "2- Default Settings", "3- Return" + ANSI_RESET);
+
+            command = input.nextInt();
+
+            switch (command) {
+                case 1:
+                    changeSettings();
+                    break;
+                case 2:
+                    defaultSettings();
+                    setSettings("4", "4", "3", "3");
+                    break;
+                case 3:
+                    break;
+                default:
+                    break;
+            }
+        } while (command != 3);
+    }
+
+    public static void defaultSettings() {
+        try {
+            FileWriter writer = new FileWriter(settings);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write("4\n"); //row
+            bufferedWriter.write("4\n"); //column
+            bufferedWriter.write("3\n"); //blocked cells
+            bufferedWriter.write("3\n"); //win status
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void changeSettings() {
+        clearConsole();
+
+        String row;
+        String column;
+        String blockedCellsNum;
+        String winCellsNum;
+
+        input.nextLine();
+        System.out.println(ANSI_BLUE + "Enter row: ");
+        row = input.nextLine();
+        System.out.println("Enter Column: ");
+        column = input.nextLine();
+        System.out.println("How many blocked cells do you want?: ");
+        blockedCellsNum = input.nextLine();
+        System.out.println("How many similar symbols in a row specify the winner?: ");
+        winCellsNum = input.nextLine();
+
+        try {
+            FileWriter writer = new FileWriter(settings);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write(row + '\n'); //row
+            bufferedWriter.write(column + '\n'); //column
+            bufferedWriter.write(blockedCellsNum + '\n'); //blocked cells
+            bufferedWriter.write(winCellsNum + '\n'); //win status
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setSettings(row, column, blockedCellsNum, winCellsNum);
+    }
+
+    public static void setSettings(String row, String column, String blockedCellsNum, String winCellsNum) {
+        clearConsole();
+
+        try {
+            FileReader reader = new FileReader(settings);
+            BufferedReader bufferedReader = new BufferedReader(reader);
+
+            String line;
+
+            int lineNum = 0;
+            System.out.println(ANSI_PURPLE + "# Settings");
+            while ((line = bufferedReader.readLine()) != null) {
+                lineNum += 1;
+
+                switch (lineNum) {
+                    case 1:
+                        System.out.print("=> ROW : ");
+                        break;
+                    case 2:
+                        System.out.print("=> COLUMN : ");
+                        break;
+                    case 3:
+                        System.out.print("=> BLOCKED CELLS : ");
+                        break;
+                    case 4:
+                        System.out.print("=> WIN CELL NUMBER : ");
+                        break;
+                    default:
+                        break;
+                }
+                System.out.println(line);
+            }
+            reader.close();
+            System.out.print(ANSI_RESET);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setRow = Integer.parseInt(row);
+        setColumn = Integer.parseInt(column);
+        setBlocked = Integer.parseInt(blockedCellsNum);
+        setWinNum = Integer.parseInt(winCellsNum);
 
         pressKey();
     }
