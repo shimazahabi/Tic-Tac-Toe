@@ -11,7 +11,7 @@ import java.util.Scanner;
  */
 public class GameAlgorithm {
     private static Scanner input = new Scanner(System.in);
-    private static String[][] board = new String[4][4];
+    private static String[][] board;
     private static ArrayList<Integer> emptyCells = new ArrayList<>();
     private static String winner;
     private static String turn;
@@ -124,6 +124,11 @@ public class GameAlgorithm {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        setRow = Integer.parseInt("4");
+        setColumn = Integer.parseInt("4");
+        setBlocked = Integer.parseInt("3");
+        setWinNum = Integer.parseInt("3");
     }
 
     public static void changeSettings() {
@@ -244,16 +249,16 @@ public class GameAlgorithm {
      * This method prints the board.
      */
     public static void showBoard() {
-
-        for (int i = 0; i < 4; i++) {
-            System.out.println(ANSI_PURPLE + "+-----+-----+-----+-----+" + ANSI_RESET);
-            for (int j = 0; j < 4; j++) {
+        String line = "+-----";
+        for (int i = 0; i < setRow; i++) {
+            System.out.println(ANSI_PURPLE + line.repeat(setColumn) + "+" + ANSI_RESET);
+            for (int j = 0; j < setColumn; j++) {
                 System.out.printf(ANSI_PURPLE + "%s", "|" + ANSI_RESET);
                 System.out.printf(" %8s ", board[i][j]);
             }
             System.out.printf(ANSI_PURPLE + "%s%n", "|" + ANSI_RESET);
         }
-        System.out.println(ANSI_PURPLE + "+-----+-----+-----+-----+" + ANSI_RESET);
+        System.out.println(ANSI_PURPLE + line.repeat(setColumn) + "+" + ANSI_RESET);
     }
 
     /**
@@ -273,7 +278,7 @@ public class GameAlgorithm {
 
             while (true) {
                 if(checkEmptyCells(cellNum - 1)) {
-                    board[(cellNum - 1) / 4][(cellNum - 1) % 4] = move;
+                    board[(cellNum - 1) / setColumn][(cellNum - 1) % setColumn] = move;
                     break;
                 } else {
                     System.out.println(ANSI_RED + "** Attention => Chosen cell isn't available.");
@@ -282,7 +287,7 @@ public class GameAlgorithm {
                 }
             }
 
-            winner = winnerCheck((cellNum - 1) / 4, (cellNum - 1) % 4);
+            winner = winnerCheck((cellNum - 1) / setColumn, (cellNum - 1) % setColumn);
 
             if(winner != null){
                 clearConsole();
@@ -327,8 +332,8 @@ public class GameAlgorithm {
                 while (true) {
 
                     if(checkEmptyCells(cellNum - 1)) {
-                        board[(cellNum - 1) / 4][(cellNum - 1) % 4] = move;
-                        winner = winnerCheck((cellNum - 1) / 4, (cellNum - 1) % 4);
+                        board[(cellNum - 1) / setColumn][(cellNum - 1) % setColumn] = move;
+                        winner = winnerCheck((cellNum - 1) / setColumn, (cellNum - 1) % setColumn);
                         break;
                     } else {
                         System.out.println(ANSI_RED + "** Attention => Chosen cell isn't available.");
@@ -349,8 +354,8 @@ public class GameAlgorithm {
 
                 while (true) {
                     if(checkEmptyCells(cellNum)) {
-                        board[cellNum / 4][cellNum % 4] = move;
-                        winner = winnerCheck(cellNum / 4, cellNum % 4);
+                        board[cellNum / setColumn][cellNum % setColumn] = move;
+                        winner = winnerCheck(cellNum / setColumn, cellNum % setColumn);
                         break;
                     } else {
                         cellNum = emptyCells.get(new Random().nextInt(emptyCells.size()));
@@ -389,22 +394,23 @@ public class GameAlgorithm {
         turn = "X";
         move = ANSI_CYAN + "X";
         emptyCells.clear();
+        board = new String[setRow][setColumn];
 
         int number = 1;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < setRow; i++) {
+            for (int j = 0; j < setColumn; j++) {
                 board[i][j] = ANSI_YELLOW + number;
                 number++;
             }
         }
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < (setRow * setColumn); i++) {
             emptyCells.add(i);
         }
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < setBlocked; i++) {
             int blockCellNum = emptyCells.get(new Random().nextInt(emptyCells.size()));
-            board[blockCellNum / 4][blockCellNum % 4] = ANSI_RED + "#";
+            board[blockCellNum / setColumn][blockCellNum % setColumn] = ANSI_RED + "#";
             emptyCells.remove((Integer) blockCellNum);
         }
     }
@@ -434,14 +440,14 @@ public class GameAlgorithm {
     static String winnerCheck(int row, int column) {
         // row
         int countSimilar = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < setColumn; i++) {
 
             if(Objects.equals(board[row][i], move)){
                 countSimilar++;
             } else {
                 countSimilar = 0;
             }
-            if(countSimilar == 3){
+            if(countSimilar == setWinNum){
                 winner = turn;
                 return winner;
             }
@@ -449,67 +455,68 @@ public class GameAlgorithm {
 
         //column
         countSimilar = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < setRow; i++) {
 
             if(Objects.equals(board[i][column], move)){
                 countSimilar++;
             } else {
                 countSimilar = 0;
             }
-            if(countSimilar == 3){
+            if(countSimilar == setWinNum){
                 winner = turn;
                 return winner;
             }
         }
 
-        if (row == column) {
+        //minorDiameter
+        int diametersNum = (setRow + setColumn) - 1;
+        int cellsNumsInDiameter = 0;
+        int startRow = 0;
+        int startColumn;
+        for (int i = 0; i < diametersNum; i++) {
+            if(i >= setColumn){
+                startRow++;
+            }
 
-            if(diagonalWinStatus(0, 4, 0, 1)){
-                winner = turn;
-                return winner;
+            startColumn = maximum(0, (i + 1 - setRow));
+            cellsNumsInDiameter = minimum((i + 1), setColumn - startColumn, setRow);
+
+            if(row + column == i){
+                if(diagonalWinStatus(startRow, (startRow + cellsNumsInDiameter), i, -1)){
+                    winner = turn;
+                    return winner;
+                }
             }
         }
 
-        if(row + column == 3) {
-
-            if(diagonalWinStatus(0, 4, 3, -1)){
-                winner = turn;
-                return winner;
+        //mainDiameter
+        startRow = 0;
+        for (int i = 0, j = 1 - setColumn; i < diametersNum; i++, j++) {
+            if(i >= setColumn){
+                startRow++;
             }
-        }
 
-        if(column - row == 1) {
+            cellsNumsInDiameter = minimum((i + 1), setRow - startRow, setColumn);
 
-            if(diagonalWinStatus(0, 3, 1, 1)){
-                winner = turn;
-                return winner;
-            }
-        }
-
-        if(row - column == 1) {
-
-            if(diagonalWinStatus(1, 4, -1, 1)){
-                winner = turn;
-                return winner;
-            }
-        }
-
-        if(row + column == 2) {
-
-            if(diagonalWinStatus(0, 3, 2, -1)){
-                winner = turn;
-                return winner;
-            }
-        }
-
-        if(row + column == 4) {
-
-            if(diagonalWinStatus(1, 4, 4, -1)){
-                winner = turn;
-                return winner;
+            if(row - column == j){
+                if(diagonalWinStatus(startRow, (startRow + cellsNumsInDiameter), ((-1) * j), 1)){
+                    winner = turn;
+                    return winner;
+                }
             }
         }
         return  winner;
+    }
+
+    public static int minimum(int a, int b, int c) {
+        int min1 = (a < b) ? a : b;
+        int min2 = (min1 < c) ? min1 : c;
+        return min2;
+    }
+
+    public static int maximum(int a, int b) {
+        int max = (a > b) ? a : b;
+        return max;
     }
 
     /**
@@ -532,7 +539,7 @@ public class GameAlgorithm {
             } else {
                 countSimilar = 0;
             }
-            if(countSimilar == 3){
+            if(countSimilar == setWinNum){
                 win = true;
                 return win;
             }
