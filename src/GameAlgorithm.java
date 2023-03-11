@@ -30,7 +30,9 @@ public class GameAlgorithm {
      */
     public static void mainMenu() {
         int command;
-        defaultSettings();
+        if (settings.exists()) {
+            defaultSettings();
+        }
 
         do {
             clearConsole();
@@ -473,7 +475,7 @@ public class GameAlgorithm {
         int cellsNumsInDiameter = 0;
         int startRow = 0;
         int startColumn;
-        
+
         for (int i = 0; i < diametersNum; i++) {
             if(i >= setColumn){
                 startRow++;
