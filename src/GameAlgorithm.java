@@ -476,6 +476,7 @@ public class GameAlgorithm {
         int startRow = 0;
         int startColumn;
 
+        
         for (int i = 0; i < diametersNum; i++) {
             if(i >= setColumn){
                 startRow++;
