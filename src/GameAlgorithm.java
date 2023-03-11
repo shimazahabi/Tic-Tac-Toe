@@ -473,6 +473,7 @@ public class GameAlgorithm {
         int cellsNumsInDiameter = 0;
         int startRow = 0;
         int startColumn;
+        
         for (int i = 0; i < diametersNum; i++) {
             if(i >= setColumn){
                 startRow++;
@@ -508,15 +509,16 @@ public class GameAlgorithm {
         return  winner;
     }
 
+    
+    public static int maximum(int a, int b) {
+        int max = (a > b) ? a : b;
+        return max;
+    }
+
     public static int minimum(int a, int b, int c) {
         int min1 = (a < b) ? a : b;
         int min2 = (min1 < c) ? min1 : c;
         return min2;
-    }
-
-    public static int maximum(int a, int b) {
-        int max = (a > b) ? a : b;
-        return max;
     }
 
     /**
