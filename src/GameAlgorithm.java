@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
@@ -15,18 +16,20 @@ public class GameAlgorithm {
     private static String winner;
     private static String turn;
     private static String move;
+    private static File Accounts = new File("TicTacToeAccounts.txt");
+    private static String[] activeUsers = new String[4];
 
     /**
      * This method includes the main menu options.
      */
     public static void mainMenu() {
         int command;
-
+        loginSignUpMenu();
         do {
             clearConsole();
 
             System.out.println(ANSI_CYAN + "\t||<< Tic Tac Toe >>||\t" + ANSI_RESET);
-            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n", "1- START A GAME", "2- INFORMATION", "3- EXIT" + ANSI_RESET);
+            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n%s%n", "1- START A GAME", "2- Profile", "3- INFORMATION", "4- EXIT" + ANSI_RESET);
 
             command = input.nextInt();
 
@@ -35,14 +38,17 @@ public class GameAlgorithm {
                     gameMenu();
                     break;
                 case 2:
-                    info();
+                    profile();
                     break;
                 case 3:
+                    info();
+                    break;
+                case 4:
                     break;
                 default:
                     break;
             }
-        } while (command != 3);
+        } while (command != 4);
     }
 
     /**
@@ -102,6 +108,169 @@ public class GameAlgorithm {
         } while (command != 3);
     }
 
+    public static void loginSignUpMenu() {
+        int command;
+
+            clearConsole();
+
+            System.out.println(ANSI_CYAN + "\t||<< Tic Tac Toe >>||\t");
+            System.out.printf(ANSI_YELLOW + "%s%n%n", "WELCOME !");
+            System.out.printf(ANSI_BLUE + "%s%n", "1- LOGIN");
+            System.out.printf(ANSI_RED + "%s%n%s%n", "Don't have an account yet?!", "2- SIGN UP");
+
+            command = input.nextInt();
+
+            switch (command) {
+                case 1:
+                    login();
+                    break;
+                case 2:
+                    signUp();
+                    break;
+                default:
+                    break;
+            }
+    }
+
+    public static void login() {
+        clearConsole();
+
+        System.out.println(ANSI_CYAN + "\t||<< Login >>||\t");
+
+        String userName;
+        String password;
+        boolean found = false;
+
+        input.nextLine();
+        while (true) {
+            System.out.print(ANSI_BLUE + "Username: ");
+            userName = input.nextLine();
+            System.out.print("\nPassword: " + ANSI_RESET);
+            password = input.nextLine();
+
+            try {
+                FileReader reader = new FileReader(Accounts);
+                BufferedReader bufferedReader = new BufferedReader(reader);
+
+                String line;
+
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (Objects.equals(userName, line)) {
+                        line = bufferedReader.readLine();
+                        if(Objects.equals(line, password)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    System.out.println(line);
+                }
+                reader.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (found) {
+                System.out.println(ANSI_GREEN + "\nWELCOME USER => " + userName);
+                break;
+            } else {
+                System.out.println(ANSI_RED + "USER NOT FOUND! TRY AGAIN!");
+            }
+        }
+        activeUsers[0] = userName;
+        pressKey();
+    }
+    public static void signUp() {
+        clearConsole();
+        System.out.println(ANSI_CYAN + "\t||<< Sign Up >>||\t");
+
+        String userName;
+        String password;
+        String confirmPassword;
+        String win;
+        String loss;
+        String tie;
+
+        input.nextLine();
+        System.out.print(ANSI_BLUE + "Enter Username: ");
+        userName = input.nextLine();
+
+        while(true) {
+            System.out.print("\nEnter Password: ");
+            password = input.nextLine();
+            System.out.print("\nConfirm Your Password: ");
+            confirmPassword = input.nextLine();
+            if(Objects.equals(password, confirmPassword)) {
+                break;
+            } else {
+                System.out.println("\nPasswords do NOT match...Try Again :)\n");
+            }
+        }
+
+        win = "0";
+        loss = "0";
+        tie = "0";
+
+        try {
+            FileWriter writer = new FileWriter(Accounts, true);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write(userName + '\n');
+            bufferedWriter.write(password + '\n');
+            bufferedWriter.write(win + '\n');
+            bufferedWriter.write(loss + '\n');
+            bufferedWriter.write(tie + '\n');
+            bufferedWriter.write("#" + '\n'); //separator
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        activeUsers[0] = userName;
+        System.out.println("\nSigning Up Successfully Completed !\n ENJOY YOUR GAME!");
+        pressKey();
+    }
+    public static void profile() {
+        System.out.println(ANSI_CYAN + "\t||<< Profile >>||\t");
+        System.out.printf(ANSI_YELLOW + "%s%n%n", "=> Active Users and their win-loss-tie record : ");
+
+        int size = activeUsers.length;
+        for (int i = 0; i < size; i++) {
+            try {
+                FileReader reader = new FileReader(Accounts);
+                BufferedReader bufferedReader = new BufferedReader(reader);
+
+                String line;
+
+                System.out.println(ANSI_PURPLE + "~* ACTIVE USER " + (i+1) + "*~");
+                while ((line = bufferedReader.readLine()) != null) {
+
+                    if(Objects.equals(line = bufferedReader.readLine(), activeUsers[i])) {
+                        for (int j = 0; j < 5; j++) {
+                            switch (j) {
+                                case 0 -> System.out.printf("|#| Username : %s%n", line);
+                                case 2 -> System.out.printf("|#| Win : %s%n", line);
+                                case 3 -> System.out.printf("|#| Loss : %s%n", line);
+                                case 4 -> System.out.printf("|#| Tie : %s%n", line);
+                                default -> {
+                                }
+                            }
+                            line = bufferedReader.readLine();
+                        }
+                        break;
+                    }
+                }
+                System.out.println("+---------------------------+\n");
+                reader.close();
+                System.out.print(ANSI_RESET);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pressKey();
+    }
     /**
      * This method prints the board.
      */
