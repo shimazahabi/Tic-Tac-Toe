@@ -1,30 +1,33 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Scanner;
-
+import java.util.*;
 
 /**
  * This class includes the game algorithm, design and everything!
  * @author Shima Zahabi
  */
 public class GameAlgorithm {
-    private static Scanner input = new Scanner(System.in);
-    private static String[][] board = new String[4][4];
-    private static ArrayList<Integer> emptyCells = new ArrayList<>();
-    private static String winner;
-    private static String turn;
-    private static String move;
-    private static File Accounts = new File("TicTacToeAccounts.txt");
-    private static String[] activeUsers = new String[4];
+    private final Scanner input = new Scanner(System.in);
+    private String[][] board;
+    private final ArrayList<Integer> emptyCells = new ArrayList<>();
+    private String winner;
+    private String turn;
+    private String move;
+    private final int setRow = 4;
+    private final int setColumn = 4;
+    private final int setBlocked = 3;
+    private final int setWinNum = 3;
+    private final File Accounts = new File("TicTacToeAccounts.txt");
+    private final ArrayList<String> activeUsers = new ArrayList<>();
+    private boolean flag = false;
 
     /**
      * This method includes the main menu options.
      */
-    public static void mainMenu() {
+    public void mainMenu() {
         int command;
+
         loginSignUpMenu();
+
         do {
             clearConsole();
 
@@ -34,19 +37,11 @@ public class GameAlgorithm {
             command = input.nextInt();
 
             switch (command) {
-                case 1:
-                    gameMenu();
-                    break;
-                case 2:
-                    profile();
-                    break;
-                case 3:
-                    info();
-                    break;
-                case 4:
-                    break;
-                default:
-                    break;
+                case 1 -> gameMenu();
+                case 2 -> profile();
+                case 3 -> info();
+                default -> {
+                }
             }
         } while (command != 4);
     }
@@ -55,7 +50,7 @@ public class GameAlgorithm {
      * This method includes the information of the game.
      * Programmer Info and Game Rules
      */
-    public static void info() {
+    public void info() {
         clearConsole();
 
         System.out.println(ANSI_CYAN + "\t||<< Information >>||\t\n" + ANSI_RESET);
@@ -79,11 +74,12 @@ public class GameAlgorithm {
     /**
      * This method includes the game menu options.
      */
-    public static void gameMenu() {
+    public void gameMenu() {
         int command;
 
         do {
             clearConsole();
+            flag = false;
 
             System.out.println(ANSI_CYAN + "\t||<< Game Menu >>||\t\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "# Pick your challenger :)");
@@ -91,24 +87,25 @@ public class GameAlgorithm {
 
             command = input.nextInt();
 
-            switch (command){
-                case 1:
+            switch (command) {
+                case 1 -> {
                     human();
                     pressKey();
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     computer();
                     pressKey();
-                    break;
-                case 3:
-                    break;
-                default:
-                    break;
+                }
+                default -> {
+                }
             }
         } while (command != 3);
     }
 
-    public static void loginSignUpMenu() {
+    /**
+     * This method includes the login-Sign up options.
+     */
+    public void loginSignUpMenu() {
         int command;
 
             clearConsole();
@@ -120,19 +117,18 @@ public class GameAlgorithm {
 
             command = input.nextInt();
 
-            switch (command) {
-                case 1:
-                    login();
-                    break;
-                case 2:
-                    signUp();
-                    break;
-                default:
-                    break;
+        switch (command) {
+            case 1 -> login();
+            case 2 -> signUp();
+            default -> {
             }
+        }
     }
 
-    public static void login() {
+    /**
+     * This method is for the login option. (In fact, it checks whether the entered username and password exist or not.)
+     */
+    public void login() {
         clearConsole();
 
         System.out.println(ANSI_CYAN + "\t||<< Login >>||\t");
@@ -162,7 +158,6 @@ public class GameAlgorithm {
                             break;
                         }
                     }
-                    System.out.println(line);
                 }
                 reader.close();
 
@@ -177,11 +172,17 @@ public class GameAlgorithm {
                 System.out.println(ANSI_RED + "USER NOT FOUND! TRY AGAIN!");
             }
         }
-        activeUsers[0] = userName;
+
+        activeUsers.add(userName);
         pressKey();
     }
-    public static void signUp() {
+
+    /**
+     * This method is for the sign uo option. (It writes the entered information in a txt file.)
+     */
+    public void signUp() {
         clearConsole();
+
         System.out.println(ANSI_CYAN + "\t||<< Sign Up >>||\t");
 
         String userName;
@@ -190,6 +191,7 @@ public class GameAlgorithm {
         String win;
         String loss;
         String tie;
+        String Games;
 
         input.nextLine();
         System.out.print(ANSI_BLUE + "Enter Username: ");
@@ -210,6 +212,7 @@ public class GameAlgorithm {
         win = "0";
         loss = "0";
         tie = "0";
+        Games = "0";
 
         try {
             FileWriter writer = new FileWriter(Accounts, true);
@@ -220,6 +223,7 @@ public class GameAlgorithm {
             bufferedWriter.write(win + '\n');
             bufferedWriter.write(loss + '\n');
             bufferedWriter.write(tie + '\n');
+            bufferedWriter.write(Games + '\n');
             bufferedWriter.write("#" + '\n'); //separator
 
             bufferedWriter.close();
@@ -227,15 +231,103 @@ public class GameAlgorithm {
             e.printStackTrace();
         }
 
-        activeUsers[0] = userName;
+        activeUsers.add(userName);
         System.out.println("\nSigning Up Successfully Completed !\n ENJOY YOUR GAME!");
         pressKey();
     }
-    public static void profile() {
+
+    /**
+     * This method is for the player 2 to sign up or login.
+     */
+    public void signUpPlayer2() {
+        int command;
+
+        clearConsole();
+
+        System.out.printf(ANSI_YELLOW + "%s%n", "** Your opponent needs to sign up or login first !!");
+        System.out.printf(ANSI_GREEN + "%s%n", "1- LOGIN");
+        System.out.printf(ANSI_RED + "%s%n%s%n", "Don't have an account yet?!", "2- SIGN UP");
+
+        command = input.nextInt();
+
+        switch (command) {
+            case 1 -> login();
+            case 2 -> signUp();
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * This method updates the win-loss-tie record after every game.
+     * @param userName the username of the player in order to save their record
+     * @param status it can be win, loss or tie
+     */
+    public void updateScores(String userName, String status) {
+        List<String> lines = new ArrayList<>();
+        String line = null;
+
+        int changeLine = 0;
+        switch (status) {
+            case "win" -> changeLine = 2;
+            case "loss" -> changeLine = 3;
+            case "tie" -> changeLine = 4;
+            default -> {
+            }
+        }
+
+        try {
+            FileReader reader = new FileReader(Accounts);
+            BufferedReader bufferedReader = new BufferedReader(reader);
+
+            while ((line = bufferedReader.readLine()) != null) {
+                lines.add(line);
+
+                if (line.equals(userName)) {
+                    for (int i = 1; i < 5; i++) {
+                        line = bufferedReader.readLine();
+                        if (i == changeLine) {
+                            line = String.valueOf(Integer.parseInt(line) + 1);
+                        }
+                        lines.add(line);
+                    }
+                    line = bufferedReader.readLine();
+                    line = String.valueOf(Integer.parseInt(line) + 1);
+                    lines.add(line);
+                }
+            }
+
+            reader.close();
+            bufferedReader.close();
+
+            try {
+                FileWriter writer = new FileWriter(Accounts);
+                BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+                for (String s : lines) {
+                    bufferedWriter.write(s + '\n');
+                }
+
+                bufferedWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * This method shows the profiles of the active users. (username and their win-loss-tie record)
+     */
+    public void profile() {
+        clearConsole();
+
         System.out.println(ANSI_CYAN + "\t||<< Profile >>||\t");
         System.out.printf(ANSI_YELLOW + "%s%n%n", "=> Active Users and their win-loss-tie record : ");
 
-        int size = activeUsers.length;
+        int size = activeUsers.size();
         for (int i = 0; i < size; i++) {
             try {
                 FileReader reader = new FileReader(Accounts);
@@ -243,16 +335,17 @@ public class GameAlgorithm {
 
                 String line;
 
-                System.out.println(ANSI_PURPLE + "~* ACTIVE USER " + (i+1) + "*~");
+                System.out.println(ANSI_PURPLE + "~* ACTIVE USER " + (i + 1) + " *~");
                 while ((line = bufferedReader.readLine()) != null) {
 
-                    if(Objects.equals(line = bufferedReader.readLine(), activeUsers[i])) {
-                        for (int j = 0; j < 5; j++) {
+                    if(Objects.equals(line, activeUsers.get(i))) {
+                        for (int j = 0; j < 6; j++) {
                             switch (j) {
                                 case 0 -> System.out.printf("|#| Username : %s%n", line);
                                 case 2 -> System.out.printf("|#| Win : %s%n", line);
                                 case 3 -> System.out.printf("|#| Loss : %s%n", line);
                                 case 4 -> System.out.printf("|#| Tie : %s%n", line);
+                                case 5 -> System.out.printf("|#| Games : %s%n", line);
                                 default -> {
                                 }
                             }
@@ -271,26 +364,32 @@ public class GameAlgorithm {
         }
         pressKey();
     }
+
     /**
      * This method prints the board.
      */
-    public static void showBoard() {
-
-        for (int i = 0; i < 4; i++) {
-            System.out.println(ANSI_PURPLE + "+-----+-----+-----+-----+" + ANSI_RESET);
-            for (int j = 0; j < 4; j++) {
+    public void showBoard() {
+        String line = "+-----";
+        for (int i = 0; i < setRow; i++) {
+            System.out.println(ANSI_PURPLE + line.repeat(setColumn) + "+" + ANSI_RESET);
+            for (int j = 0; j < setColumn; j++) {
                 System.out.printf(ANSI_PURPLE + "%s", "|" + ANSI_RESET);
                 System.out.printf(" %8s ", board[i][j]);
             }
             System.out.printf(ANSI_PURPLE + "%s%n", "|" + ANSI_RESET);
         }
-        System.out.println(ANSI_PURPLE + "+-----+-----+-----+-----+" + ANSI_RESET);
+        System.out.println(ANSI_PURPLE + line.repeat(setColumn) + "+" + ANSI_RESET);
     }
 
     /**
      * This method includes the game algorithm when the opponent is a human.
      */
-    public static void human() {
+    public void human() {
+        if(!flag) {
+            signUpPlayer2();
+            flag = true;
+        }
+
         setMatrixArray();
 
         while (emptyCells.size() != 0){
@@ -304,7 +403,7 @@ public class GameAlgorithm {
 
             while (true) {
                 if(checkEmptyCells(cellNum - 1)) {
-                    board[(cellNum - 1) / 4][(cellNum - 1) % 4] = move;
+                    board[(cellNum - 1) / setColumn][(cellNum - 1) % setColumn] = move;
                     break;
                 } else {
                     System.out.println(ANSI_RED + "** Attention => Chosen cell isn't available.");
@@ -313,7 +412,7 @@ public class GameAlgorithm {
                 }
             }
 
-            winner = winnerCheck((cellNum - 1) / 4, (cellNum - 1) % 4);
+            winner = winnerCheck((cellNum - 1) / setColumn, (cellNum - 1) % setColumn);
 
             if(winner != null){
                 clearConsole();
@@ -335,13 +434,33 @@ public class GameAlgorithm {
             clearConsole();
             showBoard();
             System.out.println(ANSI_GREEN + "\n||# It's a tie!" + ANSI_RESET);
+
+            updateScores(activeUsers.get(0), "tie");
+            updateScores(activeUsers.get(1), "tie");
+        }
+
+        switch (winner) {
+            case "X" -> {
+                updateScores(activeUsers.get(0), "win");
+                updateScores(activeUsers.get(1), "loss");
+            }
+            case "O" -> {
+                updateScores(activeUsers.get(1), "win");
+                updateScores(activeUsers.get(0), "loss");
+            }
+            default -> {
+            }
+        }
+
+        if(Objects.equals(reStart(), "R")){
+            human();
         }
     }
 
     /**
      * This method includes the game algorithm when the opponent is a computer.
      */
-    public static void computer() {
+    public void computer() {
         setMatrixArray();
 
         while (emptyCells.size() != 0){
@@ -358,8 +477,8 @@ public class GameAlgorithm {
                 while (true) {
 
                     if(checkEmptyCells(cellNum - 1)) {
-                        board[(cellNum - 1) / 4][(cellNum - 1) % 4] = move;
-                        winner = winnerCheck((cellNum - 1) / 4, (cellNum - 1) % 4);
+                        board[(cellNum - 1) / setColumn][(cellNum - 1) % setColumn] = move;
+                        winner = winnerCheck((cellNum - 1) / setColumn, (cellNum - 1) % setColumn);
                         break;
                     } else {
                         System.out.println(ANSI_RED + "** Attention => Chosen cell isn't available.");
@@ -380,8 +499,8 @@ public class GameAlgorithm {
 
                 while (true) {
                     if(checkEmptyCells(cellNum)) {
-                        board[cellNum / 4][cellNum % 4] = move;
-                        winner = winnerCheck(cellNum / 4, cellNum % 4);
+                        board[cellNum / setColumn][cellNum % setColumn] = move;
+                        winner = winnerCheck(cellNum / setColumn, cellNum % setColumn);
                         break;
                     } else {
                         cellNum = emptyCells.get(new Random().nextInt(emptyCells.size()));
@@ -409,33 +528,67 @@ public class GameAlgorithm {
             clearConsole();
             showBoard();
             System.out.println(ANSI_GREEN + "||# It’s a tie!" + ANSI_RESET);
+
+            updateScores(activeUsers.get(0), "tie");
         }
+
+        switch (winner) {
+            case "X" -> updateScores(activeUsers.get(0), "win");
+            case "O" -> updateScores(activeUsers.get(0), "loss");
+            default -> {
+            }
+        }
+
+        if(Objects.equals(reStart(), "R")){
+            computer();
+        }
+    }
+
+    /**
+     * This method is for restarting the same game.
+     * @return 'R' for restarting the game and 'E' for returning to the previous menu.
+     */
+    public String reStart() {
+        clearConsole();
+
+        String command;
+        System.out.println(ANSI_BLUE + "\nDo you want to restart the game? Enter 'R': ");
+        System.out.println(ANSI_GREEN + "Otherwise, to return to the challenger menu, Enter 'E': ");
+
+        command = input.nextLine();
+        command = input.nextLine();
+        while (!(Objects.equals(command, "R") || Objects.equals(command, "E"))) {
+            System.out.println(ANSI_RED + "** Wrong command! Try Again :)");
+            command = input.nextLine();
+        }
+        return command;
     }
 
     /**
      * This method sets the initial value of the Matrix (board) and the Array (the array that includes the empty cells).
      */
-    public static void setMatrixArray() {
+    public void setMatrixArray() {
         winner = null;
         turn = "X";
         move = ANSI_CYAN + "X";
         emptyCells.clear();
+        board = new String[setRow][setColumn];
 
         int number = 1;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < setRow; i++) {
+            for (int j = 0; j < setColumn; j++) {
                 board[i][j] = ANSI_YELLOW + number;
                 number++;
             }
         }
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < (setRow * setColumn); i++) {
             emptyCells.add(i);
         }
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < setBlocked; i++) {
             int blockCellNum = emptyCells.get(new Random().nextInt(emptyCells.size()));
-            board[blockCellNum / 4][blockCellNum % 4] = ANSI_RED + "#";
+            board[blockCellNum / setColumn][blockCellNum % setColumn] = ANSI_RED + "#";
             emptyCells.remove((Integer) blockCellNum);
         }
     }
@@ -444,9 +597,8 @@ public class GameAlgorithm {
      * This method checks whether the chosen cell is empty or not.
      * @param cellNum It is the index of the chosen cell.
      * @return true if the chosen cell is empty
-     * @return false if the chosen cell is already used.
      */
-    public static boolean checkEmptyCells(int cellNum) {
+    public boolean checkEmptyCells(int cellNum) {
         if(emptyCells.contains(cellNum)){
             emptyCells.remove((Integer) cellNum);
             return true;
@@ -462,86 +614,100 @@ public class GameAlgorithm {
      * @param column the column of the chosen cell
      * @return the winner's symbol (returns null if nobody has won the game).
      */
-    static String winnerCheck(int row, int column) {
-        // row
+    public String winnerCheck(int row, int column) {
+        //Row
         int countSimilar = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < setColumn; i++) {
 
             if(Objects.equals(board[row][i], move)){
                 countSimilar++;
             } else {
                 countSimilar = 0;
             }
-            if(countSimilar == 3){
+            if(countSimilar == setWinNum){
                 winner = turn;
                 return winner;
             }
         }
 
-        //column
+        //Column
         countSimilar = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < setRow; i++) {
 
             if(Objects.equals(board[i][column], move)){
                 countSimilar++;
             } else {
                 countSimilar = 0;
             }
-            if(countSimilar == 3){
+            if(countSimilar == setWinNum){
                 winner = turn;
                 return winner;
             }
         }
 
-        if (row == column) {
+        //Minor Diameter
+        int diametersNum = (setRow + setColumn) - 1;
+        int cellsNumsInDiameter = 0;
+        int startRow = 0;
+        int startColumn;
 
-            if(diagonalWinStatus(0, 4, 0, 1)){
-                winner = turn;
-                return winner;
+        for (int i = 0; i < diametersNum; i++) {
+            if(i >= setColumn){
+                startRow++;
+            }
+
+            startColumn = maximum(0, (i + 1 - setRow));
+            cellsNumsInDiameter = minimum((i + 1), setColumn - startColumn, setRow);
+
+            if(row + column == i){
+                if(diagonalWinStatus(startRow, (startRow + cellsNumsInDiameter), i, -1)){
+                    winner = turn;
+                    return winner;
+                }
             }
         }
 
-        if(row + column == 3) {
-
-            if(diagonalWinStatus(0, 4, 3, -1)){
-                winner = turn;
-                return winner;
+        //Main Diameter
+        startRow = 0;
+        for (int i = 0, j = 1 - setColumn; i < diametersNum; i++, j++) {
+            if(i >= setColumn){
+                startRow++;
             }
-        }
 
-        if(column - row == 1) {
+            cellsNumsInDiameter = minimum((i + 1), setRow - startRow, setColumn);
 
-            if(diagonalWinStatus(0, 3, 1, 1)){
-                winner = turn;
-                return winner;
-            }
-        }
-
-        if(row - column == 1) {
-
-            if(diagonalWinStatus(1, 4, -1, 1)){
-                winner = turn;
-                return winner;
-            }
-        }
-
-        if(row + column == 2) {
-
-            if(diagonalWinStatus(0, 3, 2, -1)){
-                winner = turn;
-                return winner;
-            }
-        }
-
-        if(row + column == 4) {
-
-            if(diagonalWinStatus(1, 4, 4, -1)){
-                winner = turn;
-                return winner;
+            if(row - column == j){
+                if(diagonalWinStatus(startRow, (startRow + cellsNumsInDiameter), ((-1) * j), 1)){
+                    winner = turn;
+                    return winner;
+                }
             }
         }
         return  winner;
     }
+
+    /**
+     * This method calculates the maximum of two integers.
+     * @param a the first integer
+     * @param b the second integer
+     * @return the maximum
+     */
+    public static int maximum(int a, int b) {
+        return Math.max(a, b);
+    }
+
+    /**
+     * This method calculates the minimum of three integers.
+     * @param a the first integer
+     * @param b the second integer
+     * @param c the third integer
+     * @return the minimum
+     */
+    public static int minimum(int a, int b, int c) {
+        int min1 = Math.min(a, b);
+        return Math.min(min1, c);
+    }
+
 
     /**
      * This method checks win status in a diameter.
@@ -550,10 +716,8 @@ public class GameAlgorithm {
      * @param add this value is added to the row to calculate the column
      * @param sign this value is multiplied by the row to calculate the column
      * @return true if three same symbols founded in a diameter
-     * @return false if three same symbols not founded in a diameter
      */
-    public static boolean diagonalWinStatus(int start, int end, int add, int sign) {
-        boolean win = false;
+    public boolean diagonalWinStatus(int start, int end, int add, int sign) {
         int countSimilar = 0;
 
         for (int i = start; i < end; i++) {
@@ -563,25 +727,24 @@ public class GameAlgorithm {
             } else {
                 countSimilar = 0;
             }
-            if(countSimilar == 3){
-                win = true;
-                return win;
+            if(countSimilar == setWinNum){
+                return true;
             }
         }
-        return win;
+        return false;
     }
 
     /**
      * This method clears the console. (However it doesn't work in intellij)
      */
-    public static void clearConsole() {
+    public void clearConsole() {
         System.out.print("\033[H\033[2J");
     }
 
     /**
      * This method waits for pressing a key to continue.
      */
-    public static void pressKey() {
+    public void pressKey() {
         System.out.println("Please press a key to continue...");
         try{System.in.read();}
         catch(Exception e){	e.printStackTrace();}
@@ -590,11 +753,11 @@ public class GameAlgorithm {
     /**
      * These are the Ansi Colors used for colorful console.
      */
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_PURPLE = "\u001B[35m";
-    public static final String ANSI_CYAN = "\u001B[36m";
+    public final String ANSI_RESET = "\u001B[0m";
+    public final String ANSI_RED = "\u001B[31m";
+    public final String ANSI_GREEN = "\u001B[32m";
+    public final String ANSI_YELLOW = "\u001B[33m";
+    public final String ANSI_BLUE = "\u001B[34m";
+    public final String ANSI_PURPLE = "\u001B[35m";
+    public final String ANSI_CYAN = "\u001B[36m";
 }
