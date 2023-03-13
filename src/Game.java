@@ -1,5 +1,6 @@
 public class Game {
     public static void main(String[] args) {
-        GameAlgorithm.mainMenu();
+        GameAlgorithm Game = new GameAlgorithm();
+        Game.mainMenu();
     }
 }
