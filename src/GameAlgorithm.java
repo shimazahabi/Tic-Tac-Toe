@@ -4,33 +4,35 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 
-
 /**
  * This class includes the game algorithm, design and everything!
  * @author Shima Zahabi
  */
 public class GameAlgorithm {
-    private static Scanner input = new Scanner(System.in);
-    private static String[][] board;
-    private static ArrayList<Integer> emptyCells = new ArrayList<>();
-    private static String winner;
-    private static String turn;
-    private static String move;
+    private Scanner input = new Scanner(System.in);
+    private String[][] board;
+    private final ArrayList<Integer> emptyCells = new ArrayList<>();
+    private String winner;
+    private String turn;
+    private String move;
 
-    private static int setRow;
-    private static int setColumn;
+    private int setRow;
+    private int setColumn;
+    private int setBlocked;
+    private int setWinNum;
 
-    private static int setBlocked;
-    private static int setWinNum;
-
-    private static File settings = new File("TicTacToeSettings.txt");
+    private final File settings = new File("TicTacToeSettings.txt");
 
     /**
      * This method includes the main menu options.
      */
-    public static void mainMenu() {
+    public void mainMenu() throws IOException {
         int command;
+
         if (settings.exists()) {
+            defaultSettings();
+        } else {
+            settings.createNewFile();
             defaultSettings();
         }
 
@@ -43,19 +45,11 @@ public class GameAlgorithm {
             command = input.nextInt();
 
             switch (command) {
-                case 1:
-                    gameMenu();
-                    break;
-                case 2:
-                    info();
-                    break;
-                case 3:
-                    settingsMenu();
-                    break;
-                case 4:
-                    break;
-                default:
-                    break;
+                case 1 -> gameMenu();
+                case 2 -> info();
+                case 3 -> settingsMenu();
+                default -> {
+                }
             }
         } while (command != 4);
     }
@@ -64,7 +58,7 @@ public class GameAlgorithm {
      * This method includes the information of the game.
      * Programmer Info and Game Rules
      */
-    public static void info() {
+    public void info() {
         clearConsole();
 
         System.out.println(ANSI_CYAN + "\t||<< Information >>||\t\n" + ANSI_RESET);
@@ -85,7 +79,10 @@ public class GameAlgorithm {
         pressKey();
     }
 
-    public static void settingsMenu() {
+    /**
+     * This method includes the Settings menu options.
+     */
+    public void settingsMenu() {
         int command;
 
         do {
@@ -97,22 +94,24 @@ public class GameAlgorithm {
             command = input.nextInt();
 
             switch (command) {
-                case 1:
+                case 1 -> {
                     changeSettings();
-                    break;
-                case 2:
+                    showSettings();
+                }
+                case 2 -> {
                     defaultSettings();
-                    setSettings("4", "4", "3", "3");
-                    break;
-                case 3:
-                    break;
-                default:
-                    break;
+                    showSettings();
+                }
+                default -> {
+                }
             }
         } while (command != 3);
     }
 
-    public static void defaultSettings() {
+    /**
+     * This method set the default settings.
+     */
+    public void defaultSettings() {
         try {
             FileWriter writer = new FileWriter(settings);
             BufferedWriter bufferedWriter = new BufferedWriter(writer);
@@ -127,13 +126,13 @@ public class GameAlgorithm {
             e.printStackTrace();
         }
 
-        setRow = Integer.parseInt("4");
-        setColumn = Integer.parseInt("4");
-        setBlocked = Integer.parseInt("3");
-        setWinNum = Integer.parseInt("3");
+        setSettings("4","4","3","3");
     }
 
-    public static void changeSettings() {
+    /**
+     * This method change the settings based on the user's desire.
+     */
+    public void changeSettings() {
         clearConsole();
 
         String row;
@@ -168,7 +167,10 @@ public class GameAlgorithm {
         setSettings(row, column, blockedCellsNum, winCellsNum);
     }
 
-    public static void setSettings(String row, String column, String blockedCellsNum, String winCellsNum) {
+    /**
+     * This method show the settings. (It reads the information from the txt file.)
+     */
+    public void showSettings() {
         clearConsole();
 
         try {
@@ -183,20 +185,12 @@ public class GameAlgorithm {
                 lineNum += 1;
 
                 switch (lineNum) {
-                    case 1:
-                        System.out.print("=> ROW : ");
-                        break;
-                    case 2:
-                        System.out.print("=> COLUMN : ");
-                        break;
-                    case 3:
-                        System.out.print("=> BLOCKED CELLS : ");
-                        break;
-                    case 4:
-                        System.out.print("=> WIN CELL NUMBER : ");
-                        break;
-                    default:
-                        break;
+                    case 1 -> System.out.print("=> ROW : ");
+                    case 2 -> System.out.print("=> COLUMN : ");
+                    case 3 -> System.out.print("=> BLOCKED CELLS : ");
+                    case 4 -> System.out.print("=> WIN CELL NUMBER : ");
+                    default -> {
+                    }
                 }
                 System.out.println(line);
             }
@@ -207,18 +201,27 @@ public class GameAlgorithm {
             e.printStackTrace();
         }
 
+        pressKey();
+    }
+
+    /**
+     * This method set the settings to the global variables.
+     * @param row row of the board
+     * @param column column of the board
+     * @param blockedCellsNum number of the blocked cells
+     * @param winCellsNum number of the similar cells that specify the winner
+     */
+    public void setSettings(String row, String column, String blockedCellsNum, String winCellsNum) {
         setRow = Integer.parseInt(row);
         setColumn = Integer.parseInt(column);
         setBlocked = Integer.parseInt(blockedCellsNum);
         setWinNum = Integer.parseInt(winCellsNum);
-
-        pressKey();
     }
 
     /**
      * This method includes the game menu options.
      */
-    public static void gameMenu() {
+    public void gameMenu() {
         int command;
 
         do {
@@ -230,19 +233,17 @@ public class GameAlgorithm {
 
             command = input.nextInt();
 
-            switch (command){
-                case 1:
+            switch (command) {
+                case 1 -> {
                     human();
                     pressKey();
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     computer();
                     pressKey();
-                    break;
-                case 3:
-                    break;
-                default:
-                    break;
+                }
+                default -> {
+                }
             }
         } while (command != 3);
     }
@@ -250,7 +251,7 @@ public class GameAlgorithm {
     /**
      * This method prints the board.
      */
-    public static void showBoard() {
+    public void showBoard() {
         String line = "+-----";
         for (int i = 0; i < setRow; i++) {
             System.out.println(ANSI_PURPLE + line.repeat(setColumn) + "+" + ANSI_RESET);
@@ -266,7 +267,7 @@ public class GameAlgorithm {
     /**
      * This method includes the game algorithm when the opponent is a human.
      */
-    public static void human() {
+    public void human() {
         setMatrixArray();
 
         while (emptyCells.size() != 0){
@@ -312,12 +313,16 @@ public class GameAlgorithm {
             showBoard();
             System.out.println(ANSI_GREEN + "\n||# It's a tie!" + ANSI_RESET);
         }
+
+        if(Objects.equals(reStart(), "R")){
+            human();
+        }
     }
 
     /**
      * This method includes the game algorithm when the opponent is a computer.
      */
-    public static void computer() {
+    public void computer() {
         setMatrixArray();
 
         while (emptyCells.size() != 0){
@@ -386,12 +391,34 @@ public class GameAlgorithm {
             showBoard();
             System.out.println(ANSI_GREEN + "||# It’s a tie!" + ANSI_RESET);
         }
+
+        if(Objects.equals(reStart(), "R")){
+            computer();
+        }
+    }
+
+    /**
+     * This method is for restarting the same game.
+     * @return 'R' for restarting the game and 'E' for returning to the previous menu.
+     */
+    public String reStart() {
+        String command;
+        System.out.println(ANSI_BLUE + "\nDo you want to restart the game? Enter 'R': ");
+        System.out.println(ANSI_GREEN + "Otherwise, to return to the challenger menu, Enter 'E': ");
+
+        command = input.nextLine();
+        command = input.nextLine();
+        while (!(Objects.equals(command, "R") || Objects.equals(command, "E"))) {
+            System.out.println(ANSI_RED + "** Wrong command! Try Again :)");
+            command = input.nextLine();
+        }
+        return command;
     }
 
     /**
      * This method sets the initial value of the Matrix (board) and the Array (the array that includes the empty cells).
      */
-    public static void setMatrixArray() {
+    public void setMatrixArray() {
         winner = null;
         turn = "X";
         move = ANSI_CYAN + "X";
@@ -421,9 +448,8 @@ public class GameAlgorithm {
      * This method checks whether the chosen cell is empty or not.
      * @param cellNum It is the index of the chosen cell.
      * @return true if the chosen cell is empty
-     * @return false if the chosen cell is already used.
      */
-    public static boolean checkEmptyCells(int cellNum) {
+    public boolean checkEmptyCells(int cellNum) {
         if(emptyCells.contains(cellNum)){
             emptyCells.remove((Integer) cellNum);
             return true;
@@ -439,8 +465,8 @@ public class GameAlgorithm {
      * @param column the column of the chosen cell
      * @return the winner's symbol (returns null if nobody has won the game).
      */
-    static String winnerCheck(int row, int column) {
-        // row
+    public String winnerCheck(int row, int column) {
+        //Row
         int countSimilar = 0;
         for (int i = 0; i < setColumn; i++) {
 
@@ -455,7 +481,7 @@ public class GameAlgorithm {
             }
         }
 
-        //column
+        //Column
         countSimilar = 0;
         for (int i = 0; i < setRow; i++) {
 
@@ -470,13 +496,12 @@ public class GameAlgorithm {
             }
         }
 
-        //minorDiameter
+        //Minor Diameter
         int diametersNum = (setRow + setColumn) - 1;
         int cellsNumsInDiameter = 0;
         int startRow = 0;
         int startColumn;
 
-        
         for (int i = 0; i < diametersNum; i++) {
             if(i >= setColumn){
                 startRow++;
@@ -493,7 +518,7 @@ public class GameAlgorithm {
             }
         }
 
-        //mainDiameter
+        //Main Diameter
         startRow = 0;
         for (int i = 0, j = 1 - setColumn; i < diametersNum; i++, j++) {
             if(i >= setColumn){
@@ -513,15 +538,13 @@ public class GameAlgorithm {
     }
 
     
-    public static int maximum(int a, int b) {
-        int max = (a > b) ? a : b;
-        return max;
+    public int maximum(int a, int b) {
+        return Math.max(a, b);
     }
 
-    public static int minimum(int a, int b, int c) {
-        int min1 = (a < b) ? a : b;
-        int min2 = (min1 < c) ? min1 : c;
-        return min2;
+    public int minimum(int a, int b, int c) {
+        int min1 = Math.min(a, b);
+        return Math.min(min1, c);
     }
 
     /**
@@ -531,10 +554,8 @@ public class GameAlgorithm {
      * @param add this value is added to the row to calculate the column
      * @param sign this value is multiplied by the row to calculate the column
      * @return true if three same symbols founded in a diameter
-     * @return false if three same symbols not founded in a diameter
      */
-    public static boolean diagonalWinStatus(int start, int end, int add, int sign) {
-        boolean win = false;
+    public boolean diagonalWinStatus(int start, int end, int add, int sign) {
         int countSimilar = 0;
 
         for (int i = start; i < end; i++) {
@@ -545,24 +566,23 @@ public class GameAlgorithm {
                 countSimilar = 0;
             }
             if(countSimilar == setWinNum){
-                win = true;
-                return win;
+                return true;
             }
         }
-        return win;
+        return false;
     }
 
     /**
      * This method clears the console. (However it doesn't work in intellij)
      */
-    public static void clearConsole() {
+    public void clearConsole() {
         System.out.print("\033[H\033[2J");
     }
 
     /**
      * This method waits for pressing a key to continue.
      */
-    public static void pressKey() {
+    public void pressKey() {
         System.out.println("Please press a key to continue...");
         try{System.in.read();}
         catch(Exception e){	e.printStackTrace();}
@@ -571,11 +591,11 @@ public class GameAlgorithm {
     /**
      * These are the Ansi Colors used for colorful console.
      */
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_PURPLE = "\u001B[35m";
-    public static final String ANSI_CYAN = "\u001B[36m";
+    public final String ANSI_RESET = "\u001B[0m";
+    public final String ANSI_RED = "\u001B[31m";
+    public final String ANSI_GREEN = "\u001B[32m";
+    public final String ANSI_YELLOW = "\u001B[33m";
+    public final String ANSI_BLUE = "\u001B[34m";
+    public final String ANSI_PURPLE = "\u001B[35m";
+    public final String ANSI_CYAN = "\u001B[36m";
 }
