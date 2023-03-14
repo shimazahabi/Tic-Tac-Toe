@@ -9,13 +9,16 @@ public class GameAlgorithm {
     private final Scanner input = new Scanner(System.in);
     private String[][] board;
     private final ArrayList<Integer> emptyCells = new ArrayList<>();
+
     private String winner;
     private String turn;
     private String move;
+
     private final int setRow = 4;
     private final int setColumn = 4;
     private final int setBlocked = 3;
     private final int setWinNum = 3;
+
     private final File Accounts = new File("TicTacToeAccounts.txt");
     private final ArrayList<String> activeUsers = new ArrayList<>();
     private boolean flag = false;
@@ -173,7 +176,9 @@ public class GameAlgorithm {
             }
         }
 
-        activeUsers.add(userName);
+        if(!activeUsers.contains(userName)){
+           activeUsers.add(userName); 
+        }
         pressKey();
     }
 
