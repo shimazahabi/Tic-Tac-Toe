@@ -1,7 +1,5 @@
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 /**
  * This class includes the game algorithm, design and everything!
@@ -11,13 +9,21 @@ public class GameAlgorithm {
     private final Scanner input = new Scanner(System.in);
     private String[][] board;
     private final ArrayList<Integer> emptyCells = new ArrayList<>();
+
     private String winner;
     private String turn;
     private String move;
-    private final int setRow = 4;
-    private final int setColumn = 4;
-    private final int setBlocked = 3;
-    private final int setWinNum = 3;
+
+    private int setRow;
+    private int setColumn;
+    private int setBlocked;
+    private int setWinNum;
+
+    private final File settings = new File("TicTacToeSettings.txt");
+    
+    private final File Accounts = new File("TicTacToeAccounts.txt");
+    private final ArrayList<String> activeUsers = new ArrayList<>();
+    private boolean flag = false;
 
     public GameAlgorithm() {
     }
@@ -25,24 +31,39 @@ public class GameAlgorithm {
     /**
      * This method includes the main menu options.
      */
-    public void mainMenu() {
+    public void mainMenu() throws IOException {
         int command;
+
+        if(!Accounts.exists()){
+            Accounts.createNewFile();
+        }
+
+        loginSignUpMenu();
+
+        if (settings.exists()) {
+            defaultSettings();
+        } else {
+            settings.createNewFile();
+            defaultSettings();
+        }
 
         do {
             clearConsole();
 
             System.out.println(ANSI_CYAN + "\t||<< Tic Tac Toe >>||\t" + ANSI_RESET);
-            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n", "1- START A GAME", "2- INFORMATION", "3- EXIT" + ANSI_RESET);
+            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n%s%n%s%n", "1- START A GAME", "2- Profile", "3- Settings", "4- INFORMATION", "5- EXIT" + ANSI_RESET);
 
             command = input.nextInt();
 
             switch (command) {
                 case 1 -> gameMenu();
-                case 2 -> info();
+                case 2 -> profile();
+                case 3 -> settingsMenu();
+                case 4 -> info();
                 default -> {
                 }
             }
-        } while (command != 3);
+        } while (command != 5);
     }
 
     /**
@@ -65,7 +86,8 @@ public class GameAlgorithm {
                 "• Up to 2 players can play simultaneously. (For single player, the other \n" +
                 "player can be an AI). There are two options for players:\n" +
                 "1 Human\n" +
-                "2 Computer" + ANSI_RESET);
+                "2 Computer");
+        System.out.printf(ANSI_RED + "# %n%s%n", "IMPORTANT NOTE : You can change the default settings of the game. (size of the board (n * m), win status, blocked cells...)" + ANSI_RESET);
 
         pressKey();
     }
@@ -78,6 +100,7 @@ public class GameAlgorithm {
 
         do {
             clearConsole();
+            flag = false;
 
             System.out.println(ANSI_CYAN + "\t||<< Game Menu >>||\t\n" + ANSI_RESET);
             System.out.println(ANSI_GREEN + "# Pick your challenger :)");
@@ -98,6 +121,410 @@ public class GameAlgorithm {
                 }
             }
         } while (command != 3);
+    }
+    
+    /**
+     * This method includes the login-Sign up options.
+     */
+    public void loginSignUpMenu() {
+        int command;
+
+            clearConsole();
+
+            System.out.println(ANSI_CYAN + "\t||<< Tic Tac Toe >>||\t");
+            System.out.printf(ANSI_YELLOW + "%s%n%n", "WELCOME !");
+            System.out.printf(ANSI_BLUE + "%s%n", "1- LOGIN");
+            System.out.printf(ANSI_RED + "%s%n%s%n", "Don't have an account yet?!", "2- SIGN UP");
+
+            command = input.nextInt();
+
+        switch (command) {
+            case 1 -> login();
+            case 2 -> signUp();
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * This method is for the login option. (In fact, it checks whether the entered username and password exist or not.)
+     */
+    public void login() {
+        clearConsole();
+
+        System.out.println(ANSI_CYAN + "\t||<< Login >>||\t");
+
+        String userName;
+        String password;
+        boolean found = false;
+
+        input.nextLine();
+        while (true) {
+            System.out.print(ANSI_BLUE + "Username: ");
+            userName = input.nextLine();
+            System.out.print("\nPassword: " + ANSI_RESET);
+            password = input.nextLine();
+
+            try {
+                FileReader reader = new FileReader(Accounts);
+                BufferedReader bufferedReader = new BufferedReader(reader);
+
+                String line;
+
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (Objects.equals(userName, line)) {
+                        line = bufferedReader.readLine();
+                        if(Objects.equals(line, password)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                reader.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (found) {
+                System.out.println(ANSI_GREEN + "\nWELCOME USER => " + userName);
+                break;
+            } else {
+                System.out.println(ANSI_RED + "USER NOT FOUND! TRY AGAIN!");
+            }
+        }
+        
+        if(!activeUsers.contains(userName)){
+           activeUsers.add(userName); 
+        }
+        pressKey();
+    }
+
+    /**
+     * This method is for the sign-up option. (It writes the entered information in a txt file.)
+     */
+    public void signUp() {
+        clearConsole();
+
+        System.out.println(ANSI_CYAN + "\t||<< Sign Up >>||\t");
+
+        String userName;
+        String password;
+        String confirmPassword;
+        String win;
+        String loss;
+        String tie;
+        String Games;
+
+        input.nextLine();
+        System.out.print(ANSI_BLUE + "Enter Username: ");
+        userName = input.nextLine();
+
+        while(true) {
+            System.out.print("\nEnter Password: ");
+            password = input.nextLine();
+            System.out.print("\nConfirm Your Password: ");
+            confirmPassword = input.nextLine();
+            if(Objects.equals(password, confirmPassword)) {
+                break;
+            } else {
+                System.out.println("\nPasswords do NOT match...Try Again :)\n");
+            }
+        }
+
+        win = "0";
+        loss = "0";
+        tie = "0";
+        Games = "0";
+
+        try {
+            FileWriter writer = new FileWriter(Accounts, true);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write(userName + '\n');
+            bufferedWriter.write(password + '\n');
+            bufferedWriter.write(win + '\n');
+            bufferedWriter.write(loss + '\n');
+            bufferedWriter.write(tie + '\n');
+            bufferedWriter.write(Games + '\n');
+            bufferedWriter.write("#" + '\n'); //separator
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        activeUsers.add(userName);
+        System.out.println("\nSigning Up Successfully Completed !\n ENJOY YOUR GAME!");
+        pressKey();
+    }
+
+    /**
+     * This method is for the player 2 to sign up or login.
+     */
+    public void signUpPlayer2() {
+        int command;
+
+        clearConsole();
+
+        System.out.printf(ANSI_YELLOW + "%s%n", "** Your opponent needs to sign up or login first !!");
+        System.out.printf(ANSI_GREEN + "%s%n", "1- LOGIN");
+        System.out.printf(ANSI_RED + "%s%n%s%n", "Don't have an account yet?!", "2- SIGN UP");
+
+        command = input.nextInt();
+
+        switch (command) {
+            case 1 -> login();
+            case 2 -> signUp();
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * This method updates the win-loss-tie record after every game.
+     * @param userName the username of the player in order to save their record
+     * @param status it can be win, loss or tie
+     */
+    public void updateScores(String userName, String status) {
+        List<String> lines = new ArrayList<>();
+        String line = null;
+
+        int changeLine = 0;
+        switch (status) {
+            case "win" -> changeLine = 2;
+            case "loss" -> changeLine = 3;
+            case "tie" -> changeLine = 4;
+            default -> {
+            }
+        }
+
+        try {
+            FileReader reader = new FileReader(Accounts);
+            BufferedReader bufferedReader = new BufferedReader(reader);
+
+            while ((line = bufferedReader.readLine()) != null) {
+                lines.add(line);
+
+                if (line.equals(userName)) {
+                    for (int i = 1; i < 5; i++) {
+                        line = bufferedReader.readLine();
+                        if (i == changeLine) {
+                            line = String.valueOf(Integer.parseInt(line) + 1);
+                        }
+                        lines.add(line);
+                    }
+                    line = bufferedReader.readLine();
+                    line = String.valueOf(Integer.parseInt(line) + 1);
+                    lines.add(line);
+                }
+            }
+
+            reader.close();
+            bufferedReader.close();
+
+            try {
+                FileWriter writer = new FileWriter(Accounts);
+                BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+                for (String s : lines) {
+                    bufferedWriter.write(s + '\n');
+                }
+
+                bufferedWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * This method shows the profiles of the active users. (username and their win-loss-tie record)
+     */
+    public void profile() {
+        clearConsole();
+
+        System.out.println(ANSI_CYAN + "\t||<< Profile >>||\t");
+        System.out.printf(ANSI_YELLOW + "%s%n%n", "=> Active Users and their win-loss-tie record : ");
+
+        int size = activeUsers.size();
+        for (int i = 0; i < size; i++) {
+            try {
+                FileReader reader = new FileReader(Accounts);
+                BufferedReader bufferedReader = new BufferedReader(reader);
+
+                String line;
+
+                System.out.println(ANSI_PURPLE + "~* ACTIVE USER " + (i + 1) + " *~");
+                while ((line = bufferedReader.readLine()) != null) {
+
+                    if(Objects.equals(line, activeUsers.get(i))) {
+                        for (int j = 0; j < 6; j++) {
+                            switch (j) {
+                                case 0 -> System.out.printf("|#| Username : %s%n", line);
+                                case 2 -> System.out.printf("|#| Win : %s%n", line);
+                                case 3 -> System.out.printf("|#| Loss : %s%n", line);
+                                case 4 -> System.out.printf("|#| Tie : %s%n", line);
+                                case 5 -> System.out.printf("|#| Games : %s%n", line);
+                                default -> {
+                                }
+                            }
+                            line = bufferedReader.readLine();
+                        }
+                        break;
+                    }
+                }
+                System.out.println("+---------------------------+\n");
+                reader.close();
+                System.out.print(ANSI_RESET);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pressKey();
+    }
+
+    /**
+     * This method includes the Settings menu options.
+     */
+    public void settingsMenu() {
+        int command;
+
+        do {
+            clearConsole();
+
+            System.out.println(ANSI_CYAN + "\t||<< Settings >>||\t" + ANSI_RESET);
+            System.out.printf(ANSI_YELLOW + "%s%n%s%n%s%n", "1- Change Settings", "2- Default Settings", "3- Return" + ANSI_RESET);
+
+            command = input.nextInt();
+
+            switch (command) {
+                case 1 -> {
+                    changeSettings();
+                    showSettings();
+                }
+                case 2 -> {
+                    defaultSettings();
+                    showSettings();
+                }
+                default -> {
+                }
+            }
+        } while (command != 3);
+    }
+
+    /**
+     * This method set the default settings.
+     */
+    public void defaultSettings() {
+        try {
+            FileWriter writer = new FileWriter(settings);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write("4\n"); //row
+            bufferedWriter.write("4\n"); //column
+            bufferedWriter.write("3\n"); //blocked cells
+            bufferedWriter.write("3\n"); //win status
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setSettings("4","4","3","3");
+    }
+
+    /**
+     * This method change the settings based on the user's desire.
+     */
+    public void changeSettings() {
+        clearConsole();
+
+        String row;
+        String column;
+        String blockedCellsNum;
+        String winCellsNum;
+
+        input.nextLine();
+        System.out.println(ANSI_BLUE + "Enter row: ");
+        row = input.nextLine();
+        System.out.println("Enter Column: ");
+        column = input.nextLine();
+        System.out.println("How many blocked cells do you want?: ");
+        blockedCellsNum = input.nextLine();
+        System.out.println("How many similar symbols in a row specify the winner?: ");
+        winCellsNum = input.nextLine();
+
+        try {
+            FileWriter writer = new FileWriter(settings);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write(row + '\n'); //row
+            bufferedWriter.write(column + '\n'); //column
+            bufferedWriter.write(blockedCellsNum + '\n'); //blocked cells
+            bufferedWriter.write(winCellsNum + '\n'); //win status
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setSettings(row, column, blockedCellsNum, winCellsNum);
+    }
+
+    /**
+     * This method show the settings. (It reads the information from the txt file.)
+     */
+    public void showSettings() {
+        clearConsole();
+
+        try {
+            FileReader reader = new FileReader(settings);
+            BufferedReader bufferedReader = new BufferedReader(reader);
+
+            String line;
+
+            int lineNum = 0;
+            System.out.println(ANSI_PURPLE + "# Settings");
+            while ((line = bufferedReader.readLine()) != null) {
+                lineNum += 1;
+
+                switch (lineNum) {
+                    case 1 -> System.out.print("=> ROW : ");
+                    case 2 -> System.out.print("=> COLUMN : ");
+                    case 3 -> System.out.print("=> BLOCKED CELLS : ");
+                    case 4 -> System.out.print("=> WIN CELL NUMBER : ");
+                    default -> {
+                    }
+                }
+                System.out.println(line);
+            }
+            reader.close();
+            System.out.print(ANSI_RESET);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        pressKey();
+    }
+
+    /**
+     * This method set the settings to the global variables.
+     * @param row row of the board
+     * @param column column of the board
+     * @param blockedCellsNum number of the blocked cells
+     * @param winCellsNum number of the similar cells that specify the winner
+     */
+    public void setSettings(String row, String column, String blockedCellsNum, String winCellsNum) {
+        setRow = Integer.parseInt(row);
+        setColumn = Integer.parseInt(column);
+        setBlocked = Integer.parseInt(blockedCellsNum);
+        setWinNum = Integer.parseInt(winCellsNum);
     }
 
     /**
@@ -120,6 +547,11 @@ public class GameAlgorithm {
      * This method includes the game algorithm when the opponent is a human.
      */
     public void human() {
+        if(!flag) {
+            signUpPlayer2();
+            flag = true;
+        }
+
         setMatrixArray();
 
         while (emptyCells.size() != 0){
@@ -164,6 +596,24 @@ public class GameAlgorithm {
             clearConsole();
             showBoard();
             System.out.println(ANSI_GREEN + "\n||# It's a tie!" + ANSI_RESET);
+
+            
+            updateScores(activeUsers.get(0), "tie");
+            updateScores(activeUsers.get(1), "tie");
+        }
+
+        
+        switch (winner) {
+            case "X" -> {
+                updateScores(activeUsers.get(0), "win");
+                updateScores(activeUsers.get(1), "loss");
+            }
+            case "O" -> {
+                updateScores(activeUsers.get(1), "win");
+                updateScores(activeUsers.get(0), "loss");
+            }
+            default -> {
+            }
         }
 
         if(Objects.equals(reStart(), "R")){
@@ -242,6 +692,15 @@ public class GameAlgorithm {
             clearConsole();
             showBoard();
             System.out.println(ANSI_GREEN + "\n||# It’s a tie!" + ANSI_RESET);
+
+            updateScores(activeUsers.get(0), "tie");
+        }
+
+        switch (winner) {
+            case "X" -> updateScores(activeUsers.get(0), "win");
+            case "O" -> updateScores(activeUsers.get(0), "loss");
+            default -> {
+            }
         }
 
         if(Objects.equals(reStart(), "R")){
