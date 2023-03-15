@@ -11,9 +11,11 @@ public class GameAlgorithm {
     private final Scanner input = new Scanner(System.in);
     private String[][] board;
     private final ArrayList<Integer> emptyCells = new ArrayList<>();
+
     private String winner;
     private String turn;
     private String move;
+
     private final int setRow = 4;
     private final int setColumn = 4;
     private final int setBlocked = 3;
@@ -147,7 +149,19 @@ public class GameAlgorithm {
             if(winner != null){
                 clearConsole();
                 showBoard();
-                System.out.println(ANSI_YELLOW + "\n||# WINNER : " + turn + ANSI_RESET);
+                
+                System.out.print(ANSI_YELLOW + "\n||# WINNER : ");
+                switch(turn) {
+                    case "X":
+                        System.out.println("PLAYER 1 (X)" + ANSI_RESET);
+                        break;
+                    case "O":
+                        System.out.println("PLAYER 2 (O)" + ANSI_RESET);
+                        break;
+                    default:
+                        break;
+                }
+
                 break;
             }
 
@@ -225,7 +239,19 @@ public class GameAlgorithm {
             if(winner != null){
                 clearConsole();
                 showBoard();
-                System.out.println(ANSI_YELLOW + "\n||# WINNER : " + turn + ANSI_RESET);
+                
+                System.out.print(ANSI_YELLOW + "\n||# WINNER : ");
+                switch(turn) {
+                    case "X":
+                        System.out.println("YOU (X)" + ANSI_RESET);
+                        break;
+                    case "O":
+                        System.out.println("COMPUTER (O)" + ANSI_RESET);
+                        break;
+                    default:
+                        break;
+                }
+
                 break;
             }
 
