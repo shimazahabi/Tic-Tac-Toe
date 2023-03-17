@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
@@ -16,38 +17,43 @@ public class GameAlgorithm {
     private String turn;
     private String move;
 
-    private final int setRow = 4;
-    private final int setColumn = 4;
-    private final int setBlocked = 3;
-    private final int setWinNum = 3;
+    private int setRow;
+    private int setColumn;
+    private int setBlocked;
+    private int setWinNum;
 
-    public GameAlgorithm() {
-    }
+    private final File settings = new File("TicTacToeSettings.txt");
 
     /**
      * This method includes the main menu options.
      */
-    public void mainMenu() {
+    public void mainMenu() throws IOException {
         String command;
+
+        if (settings.exists()) {
+            defaultSettings();
+        } else {
+            settings.createNewFile();
+            defaultSettings();
+        }
 
         do {
             clearConsole();
 
             System.out.println(ANSI_CYAN + "\t||<< Tic Tac Toe >>||\t" + ANSI_RESET);
-            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n", "1- START A GAME", "2- INFORMATION", "3- EXIT" + ANSI_RESET);
+            System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n%s%n", "1- START A GAME", "2- INFORMATION", "3- Settings", "4- Exit" + ANSI_RESET);
 
             command = input.nextLine();
 
             switch (command) {
                 case "1" -> gameMenu();
                 case "2" -> info();
-                case "3" -> {
+                case "3" -> settingsMenu();
+                case "4" -> {
                 }
                 default -> System.out.println(ANSI_RED + "Wrong command! Try again!");
             }
-
-            
-        } while (!command.equals("3"));
+        } while (!command.equals("4"));
     }
 
     /**
@@ -73,6 +79,191 @@ public class GameAlgorithm {
                 "2 Computer" + ANSI_RESET);
 
         pressKey();
+    }
+
+    /**
+     * This method includes the Settings menu options.
+     */
+    public void settingsMenu() {
+        String command;
+
+        do {
+            clearConsole();
+
+            System.out.println(ANSI_CYAN + "\t||<< Settings >>||\t" + ANSI_RESET);
+            System.out.printf(ANSI_YELLOW + "%s%n%s%n%s%n", "1- Change Settings", "2- Default Settings", "3- Return" + ANSI_RESET);
+
+            command = input.nextLine();
+
+            switch (command) {
+                case "1" -> {
+                    changeSettings();
+                    showSettings();
+                }
+                case "2" -> {
+                    defaultSettings();
+                    showSettings();
+                }
+                case "3" -> {
+                }
+                default -> System.out.println(ANSI_RED + "Wrong command! Try again!");
+            }
+        } while (!command.equals("3"));
+    }
+
+    /**
+     * This method set the default settings.
+     */
+    public void defaultSettings() {
+        try {
+            FileWriter writer = new FileWriter(settings);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write("4\n"); //row
+            bufferedWriter.write("4\n"); //column
+            bufferedWriter.write("3\n"); //blocked cells
+            bufferedWriter.write("3\n"); //win status
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setSettings("4","4","3","3");
+    }
+
+    /**
+     * This method checks if the given string is negative integer or not.
+     * @param number is the given string
+     * @return true if the given string is negative
+     */
+    public boolean checkNegative(String number) {
+        int num = Integer.parseInt(number);
+        if(num <= 0) {
+            System.out.println(ANSI_RED + "** Attention => You can only enter POSITIVE NUMBERS!" + ANSI_RESET);
+            return true;
+        } else {
+           return false;
+        }
+    }
+
+    /**
+     * This method change the settings based on the user's desire.
+     */
+    public void changeSettings() {
+        clearConsole();
+
+        String row;
+        String column;
+        String blockedCellsNum;
+        String winCellsNum;
+
+        System.out.print(ANSI_BLUE + "Enter row: ");
+        do {
+            row = input.nextLine();
+        } while (checkInt(row));
+        while (checkNegative(row)) {
+            row = input.nextLine();
+        }
+
+        System.out.print(ANSI_BLUE + "Enter Column: ");
+        do {
+            column = input.nextLine();
+        } while (checkInt(column));
+        while (checkNegative(column)) {
+            column = input.nextLine();
+        }
+
+        System.out.print(ANSI_BLUE + "How many blocked cells do you want?: ");
+        do {
+            blockedCellsNum = input.nextLine();
+        } while (checkInt(blockedCellsNum));
+        while (checkNegative(blockedCellsNum)) {
+            blockedCellsNum = input.nextLine();
+        }
+        while (Integer.parseInt(blockedCellsNum) == (Integer.parseInt(row) * Integer.parseInt(column))) {
+            System.out.println(ANSI_RED + "** Attention => You cannot block all cells! Try again!" + ANSI_RESET);
+            blockedCellsNum = input.nextLine();
+        }
+
+        System.out.print(ANSI_BLUE + "How many similar symbols in a row specify the winner?: ");
+        do {
+            winCellsNum = input.nextLine();
+        } while (checkInt(winCellsNum));
+        while (checkNegative(winCellsNum)) {
+            winCellsNum = input.nextLine();
+        }
+        while (Integer.parseInt(winCellsNum) == 1) {
+            System.out.println(ANSI_RED + "** Attention => 1 cell cannot specify the winner! Try again!" + ANSI_RESET);
+            winCellsNum = input.nextLine();
+        }
+
+        try {
+            FileWriter writer = new FileWriter(settings);
+            BufferedWriter bufferedWriter = new BufferedWriter(writer);
+
+            bufferedWriter.write(row + '\n'); //row
+            bufferedWriter.write(column + '\n'); //column
+            bufferedWriter.write(blockedCellsNum + '\n'); //blocked cells
+            bufferedWriter.write(winCellsNum + '\n'); //win status
+
+            bufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setSettings(row, column, blockedCellsNum, winCellsNum);
+    }
+
+    /**
+     * This method show the settings. (It reads the information from the txt file.)
+     */
+    public void showSettings() {
+        clearConsole();
+
+        try {
+            FileReader reader = new FileReader(settings);
+            BufferedReader bufferedReader = new BufferedReader(reader);
+
+            String line;
+
+            int lineNum = 0;
+            System.out.println(ANSI_PURPLE + "# Settings");
+            while ((line = bufferedReader.readLine()) != null) {
+                lineNum += 1;
+
+                switch (lineNum) {
+                    case 1 -> System.out.print("=> ROW : ");
+                    case 2 -> System.out.print("=> COLUMN : ");
+                    case 3 -> System.out.print("=> BLOCKED CELLS : ");
+                    case 4 -> System.out.print("=> WIN CELL NUMBER : ");
+                    default -> {
+                    }
+                }
+                System.out.println(line);
+            }
+            reader.close();
+            System.out.print(ANSI_RESET);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        pressKey();
+    }
+
+    /**
+     * This method set the settings to the global variables.
+     * @param row row of the board
+     * @param column column of the board
+     * @param blockedCellsNum number of the blocked cells
+     * @param winCellsNum number of the similar cells that specify the winner
+     */
+    public void setSettings(String row, String column, String blockedCellsNum, String winCellsNum) {
+        setRow = Integer.parseInt(row);
+        setColumn = Integer.parseInt(column);
+        setBlocked = Integer.parseInt(blockedCellsNum);
+        setWinNum = Integer.parseInt(winCellsNum);
     }
 
     /**
@@ -125,7 +316,7 @@ public class GameAlgorithm {
     /**
      * This method checks if the given string is an integer or not.
      * @param number is the given string
-     * @return ture if the given string is an integer
+     * @return true if the given string is not an integer
      */
     public boolean checkInt(String number){
         try
@@ -161,7 +352,7 @@ public class GameAlgorithm {
             int cellNum = Integer.parseInt(choice);
 
             while (true) {
-                if (checkEmptyCells(cellNum - 1)) {
+                if(checkEmptyCells(cellNum - 1)) {
                     board[(cellNum - 1) / setColumn][(cellNum - 1) % setColumn] = move;
                     break;
                 } else {
@@ -181,7 +372,6 @@ public class GameAlgorithm {
             if (winner != null) {
                 clearConsole();
                 showBoard();
-
                 System.out.print(ANSI_YELLOW + "\n||# WINNER : " + turn + ANSI_RESET);
                 break;
             }
@@ -229,7 +419,6 @@ public class GameAlgorithm {
                 cellNum = Integer.parseInt(choice);
 
                 while (true) {
-
                     if(checkEmptyCells(cellNum - 1)) {
                         board[(cellNum - 1) / setColumn][(cellNum - 1) % setColumn] = move;
                         winner = winnerCheck((cellNum - 1) / setColumn, (cellNum - 1) % setColumn);
