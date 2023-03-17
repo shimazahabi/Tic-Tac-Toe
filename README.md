@@ -40,5 +40,8 @@ Player 2 : O
 # Options
 * You should create an account ! You and your opponent can have a win-loss-tie record.
 * You can change the default settings of the game. (size of the board (n * m), win status, blocked cells...)
+* You can restart the game.
+* Ansi colors for colorful console.
+* Clears the console.
 
 # Enjoy the game :)
