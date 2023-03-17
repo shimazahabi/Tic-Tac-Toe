@@ -28,7 +28,7 @@ public class GameAlgorithm {
      * This method includes the main menu options.
      */
     public void mainMenu() {
-        int command;
+        String command;
 
         do {
             clearConsole();
@@ -36,15 +36,18 @@ public class GameAlgorithm {
             System.out.println(ANSI_CYAN + "\t||<< Tic Tac Toe >>||\t" + ANSI_RESET);
             System.out.printf(ANSI_PURPLE + "%s%n%s%n%s%n", "1- START A GAME", "2- INFORMATION", "3- EXIT" + ANSI_RESET);
 
-            command = input.nextInt();
+            command = input.nextLine();
 
             switch (command) {
-                case 1 -> gameMenu();
-                case 2 -> info();
-                default -> {
+                case "1" -> gameMenu();
+                case "2" -> info();
+                case "3" -> {
                 }
+                default -> System.out.println(ANSI_RED + "Wrong command! Try again!");
             }
-        } while (command != 3);
+
+            
+        } while (!command.equals("3"));
     }
 
     /**
@@ -76,7 +79,7 @@ public class GameAlgorithm {
      * This method includes the game menu options.
      */
     public void gameMenu() {
-        int command;
+        String command;
 
         do {
             clearConsole();
@@ -85,21 +88,22 @@ public class GameAlgorithm {
             System.out.println(ANSI_GREEN + "# Pick your challenger :)");
             System.out.printf("%s%n%s%n%s%n", "1- HUMAN", "2- COMPUTER", "3- RETURN" + ANSI_RESET);
 
-            command = input.nextInt();
+            command = input.nextLine();
 
             switch (command) {
-                case 1 -> {
+                case "1" -> {
                     human();
                     pressKey();
                 }
-                case 2 -> {
+                case "2" -> {
                     computer();
                     pressKey();
                 }
-                default -> {
+                case "3" -> {
                 }
+                default -> System.out.println(ANSI_RED + "Wrong command! Try again!");
             }
-        } while (command != 3);
+        } while (!command.equals("3"));
     }
 
     /**
@@ -119,58 +123,75 @@ public class GameAlgorithm {
     }
 
     /**
+     * This method checks if the given string is an integer or not.
+     * @param number is the given string
+     * @return ture if the given string is an integer
+     */
+    public boolean checkInt(String number){
+        try
+        {
+            Integer.parseInt(number);
+            return false;
+        }
+        catch (NumberFormatException e)
+        {
+            System.out.println(ANSI_RED + "** Attention => You can only enter NUMBERS! Try again!" + ANSI_RESET);
+            return true;
+        }
+    }
+
+    /**
      * This method includes the game algorithm when the opponent is a human.
      */
     public void human() {
         setMatrixArray();
 
-        while (emptyCells.size() != 0){
+        while (emptyCells.size() != 0) {
             clearConsole();
 
             showBoard();
 
-            System.out.println(ANSI_BLUE + "This is " + turn + "'s turn!\n" + ANSI_RESET + "Enter your cell number: \n");
+            System.out.print(ANSI_BLUE + "This is " + turn + "'s turn!\n" + ANSI_RESET + "Enter your cell number: \n");
 
-            int cellNum = input.nextInt();
+            String choice;
+            do {
+                choice = input.nextLine();
+            } while (checkInt(choice));
+
+            int cellNum = Integer.parseInt(choice);
 
             while (true) {
-                if(checkEmptyCells(cellNum - 1)) {
+                if (checkEmptyCells(cellNum - 1)) {
                     board[(cellNum - 1) / setColumn][(cellNum - 1) % setColumn] = move;
                     break;
                 } else {
                     System.out.println(ANSI_RED + "** Attention => Chosen cell isn't available.");
-                    System.out.println("Try another cell number: " + ANSI_RESET);
-                    cellNum = input.nextInt();
+                    System.out.print("Try another cell number: " + ANSI_RESET);
+
+                    do {
+                        choice = input.nextLine();
+                    } while (checkInt(choice));
+
+                    cellNum = Integer.parseInt(choice);
                 }
             }
 
             winner = winnerCheck((cellNum - 1) / setColumn, (cellNum - 1) % setColumn);
 
-            if(winner != null){
+            if (winner != null) {
                 clearConsole();
                 showBoard();
-                
-                System.out.print(ANSI_YELLOW + "\n||# WINNER : ");
-                switch(turn) {
-                    case "X":
-                        System.out.println("PLAYER 1 (X)" + ANSI_RESET);
-                        break;
-                    case "O":
-                        System.out.println("PLAYER 2 (O)" + ANSI_RESET);
-                        break;
-                    default:
-                        break;
-                }
 
+                System.out.print(ANSI_YELLOW + "\n||# WINNER : " + turn + ANSI_RESET);
                 break;
             }
 
-            if(Objects.equals(turn, "X")){
-                turn = "O";
+            if (Objects.equals(turn, "PLAYER 1 (X)")) {
+                turn = "PLAYER 2 (O)";
                 move = ANSI_GREEN + "O";
-            } else if(Objects.equals(turn, "O")){
+            } else if (Objects.equals(turn, "PLAYER 2 (O)")) {
                 move = ANSI_CYAN + "X";
-                turn = "X";
+                turn = "PLAYER 1 (X)";
             }
         }
 
@@ -197,10 +218,15 @@ public class GameAlgorithm {
             showBoard();
 
             int cellNum = 1;
-            if(Objects.equals(turn, "X")){
-                System.out.println(ANSI_BLUE + "It's YOUR turn!\n" + ANSI_RESET + "Enter your cell number: ");
+            if(Objects.equals(turn, "PLAYER 1 (X)")){
+                System.out.print(ANSI_BLUE + "It's YOUR turn!\n" + ANSI_RESET + "Enter your cell number: ");
 
-                cellNum = input.nextInt();
+                String choice;
+                do {
+                    choice = input.nextLine();
+                } while (checkInt(choice));
+
+                cellNum = Integer.parseInt(choice);
 
                 while (true) {
 
@@ -210,11 +236,16 @@ public class GameAlgorithm {
                         break;
                     } else {
                         System.out.println(ANSI_RED + "** Attention => Chosen cell isn't available.");
-                        System.out.println("Try another cell number: " + ANSI_RESET);
-                        cellNum = input.nextInt();
+                        System.out.print("Try another cell number: " + ANSI_RESET);
+
+                        do {
+                            choice = input.nextLine();
+                        } while (checkInt(choice));
+
+                        cellNum = Integer.parseInt(choice);
                     }
                 }
-            } else if(Objects.equals(turn, "O")){
+            } else if(Objects.equals(turn, "Computer (O)")){
                 System.out.println(ANSI_BLUE + "It's My turn!" + ANSI_RESET);
 
                 try {
@@ -240,27 +271,16 @@ public class GameAlgorithm {
                 clearConsole();
                 showBoard();
                 
-                System.out.print(ANSI_YELLOW + "\n||# WINNER : ");
-                switch(turn) {
-                    case "X":
-                        System.out.println("YOU (X)" + ANSI_RESET);
-                        break;
-                    case "O":
-                        System.out.println("COMPUTER (O)" + ANSI_RESET);
-                        break;
-                    default:
-                        break;
-                }
-
+                System.out.print(ANSI_YELLOW + "\n||# WINNER : " + turn + ANSI_RESET);
                 break;
             }
 
-            if(Objects.equals(turn, "X")){
-                turn = "O";
+            if (Objects.equals(turn, "PLAYER 1 (X)")) {
+                turn = "Computer (O)";
                 move = ANSI_GREEN + "O";
-            } else if(Objects.equals(turn, "O")){
-                turn = "X";
+            } else if (Objects.equals(turn, "Computer (O)")) {
                 move = ANSI_CYAN + "X";
+                turn = "PLAYER 1 (X)";
             }
         }
 
@@ -285,7 +305,6 @@ public class GameAlgorithm {
         System.out.println(ANSI_GREEN + "Otherwise, to return to the challenger menu, Enter 'E': ");
 
         command = input.nextLine();
-        command = input.nextLine();
         while (!(Objects.equals(command, "R") || Objects.equals(command, "E"))) {
             System.out.println(ANSI_RED + "** Wrong command! Try Again :)");
             command = input.nextLine();
@@ -298,7 +317,7 @@ public class GameAlgorithm {
      */
     public void setMatrixArray() {
         winner = null;
-        turn = "X";
+        turn = "PLAYER 1 (X)";
         move = ANSI_CYAN + "X";
         emptyCells.clear();
         board = new String[setRow][setColumn];
