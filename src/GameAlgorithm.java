@@ -826,8 +826,6 @@ public class GameAlgorithm {
      * @return 'R' for restarting the game and 'E' for returning to the previous menu.
      */
     public String reStart() {
-        clearConsole();
-
         String command;
         System.out.println(ANSI_BLUE + "\nDo you want to restart the game? Enter 'R': ");
         System.out.println(ANSI_GREEN + "Otherwise, to return to the challenger menu, Enter 'E': ");
